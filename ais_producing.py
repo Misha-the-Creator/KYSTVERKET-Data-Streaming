@@ -48,14 +48,10 @@ class AISReceiver():
                 while True:
                     data = sock.recv(1024).decode("utf-8")
                     buffer.append(data)
-
                     # Отправка в топик
                     self.send_message_by_producer(producer, topic, data)
-
                     # Получение из топика
                     message = self.pull_message_by_consumer(consumer)
-
-                    print(message)
                     
         except Exception as e:
             logger.error(f"❌ Обрыв связи с AIS-стримом: {e}")
