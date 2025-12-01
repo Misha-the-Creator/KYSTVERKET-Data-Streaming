@@ -1,9 +1,11 @@
 import socket
+from pyais import decode
 import time
 import json
 import os
 from logger import define_logger
 from dotenv import load_dotenv
+from pyais.stream import IterMessages
 from producer_consumer import producer, consumer
 load_dotenv()
 
@@ -36,7 +38,17 @@ class AISReceiver():
         if msg is None:
             logger.info(f"Пока не получил данные")
         else:
-            logger.info(f"📩 Получаю данные: {msg.value().decode("utf-8")}") 
+            mess = msg.value().decode("utf-8")
+            logger.info(f"📩 Получаю данные: {mess}")
+            
+            messages = [line.encode() for line in mess.split() if line]
+
+            with IterMessages(messages) as s:
+                for msg in s:
+                    if msg.tag_block is not None:
+                        msg.tag_block.init()
+                    logger.info(f"📩 Их декодированная версия: {msg.decode()}")
+
         return msg
 
     def receive_data(self, producer, consumer, topic):
